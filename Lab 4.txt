@@ -1,0 +1,97 @@
+practica 1
+
+sudo dnf install httpd -y
+systemctl start httpd
+systemctl enable httpd
+systemctl status httpd
+cd /var/www/html
+mkdir prueba1
+cd ./prueba1
+nano index.html
+
+<!DOCTYPE html>
+<html>
+<head> <title>Hola Mundo</title></head>
+<body>
+    <h1>Hola Mundo</h1>
+</body>
+</html>
+nano /etc/httpd/conf/httpd.conf
+nano /etc/hosts
+systemctl restart httpd
+cd /var/www/html
+mkdir prueba2
+cd ./prueba2
+nano index.html
+<!DOCTYPE html>
+<html>
+<head><title>Datos de estudiante</title></head>
+<body>
+<h3>Marcos Antonio Martinez Ramirez</h3>
+<p>Matricula: 2025-0855</p>
+<p>Asignatura: Sistemas Operativos III<br>
+Maestro: Adrian Alcantara</p>
+</body>
+</html>
+nano /etc/httpd/conf/httpd.conf
+nano /etc/hosts
+systemctl restart httpd
+
+
+practica 2
+
+dnf install postfix* -y
+dnf install mail* -y
+cd /etc/postfix
+vi main.cf
+
+(agregar)myhostname = marcos.ro.com
+(agregar)mydomain = marcos.rod.com
+(descomentar linea 2)myorigin = $mydomain
+(descomentar linea 1)mynetworks = 192.168.254.132/24
+(agregar)relayhost = [smtp.gmail.com]:587
+
+(comentar)#smtp_tls_security_level = may
+#########################
+smtp_use_tls = yes
+smtp_sasl_auth_enable = yes
+smtp_tls_security_level = encrypt
+
+smtp_sasl_security_options = 
+
+smtp_sasl_password_maps = hash:/etc/postfix/sasl_passwd
+
+<VirtualHost *:8080>
+ ServerName prueba2.localhost
+ DocumentRoot "/var/www/html/prueba2"
+ ServerAdmin root@localhost
+</VirtualHost>
+vi sasl_passwd
+[smtp.gmail.com]:587 marcosmartinex36@gmail.com:
+postmap sasl_passwd
+chmod 600 sasl_passwd
+systemctl start postfix
+systemctl restart postfix
+vi correo.txt
+mail -s "una prueba" marcomartinex04@gmail.com < correo.txt
+mail -s "MambruSeFueALaGuerra" os3conadrian@gmail.com < correo.txt
+
+
+
+Practica 3
+
+sudo dnf install cups -y
+sudo dnf install cups-pdf -y
+firewall-cmd --permanent --add-port=631/tcp
+sudo firewall-cmd --reload
+nano /etc/cups/cupsd.conf
+cupsctl --remote-admin --remote-any --share-printers
+systemctl start cups 
+systemctl enable cups
+systemctl restart
+
+
+
+
+
+
