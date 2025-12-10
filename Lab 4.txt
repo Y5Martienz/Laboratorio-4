@@ -1,94 +1,293 @@
-practica 1
+Pracita 1
+
+# Instalamos el servidor Apache con el siguiente comando:
 
 sudo dnf install httpd -y
-systemctl start httpd
-systemctl enable httpd
-systemctl status httpd
+
+# Iniciamos el servicio y lo habilitamos para que arranque con el sistema:
+
+sudo systemctl start httpd
+
+sudo systemctl enable httpd
+
+# Verificamos el estado del servicio para confirmar que está activo:
+
+sudo systemctl status httpd
+
+# Entramos al directorio donde se alojan los archivos de los sitios web:
+
 cd /var/www/html
-mkdir prueba1
-cd ./prueba1
-nano index.html
+
+# Creamos un directorio para el primer sitio web estático:
+
+sudo mkdir prueba
+cd prueba
+
+# Creamos el archivo HTML que contendrá el mensaje “Hola Mundo”:
+
+sudo nano index.html
+
+# Pegamos el siguiente contenido:
+<!DOCTYPE html>
+<html>
+<head><title>Hola Mundo</title></head>
+<body><h1>Hola Mundo</h1></body>
+</html>
+
+# Guardamos con Ctrl + O, Enter y salimos con Ctrl + X.
+
+# Editamos el archivo de configuración principal de Apache:
+
+sudo nano /etc/httpd/conf/httpd.conf
+
+# Nos aseguramos de que esté la línea "Listen 80" (ya suele estar por defecto).
+# Luego, al final del archivo agregamos lo siguiente para configurar el VirtualHost del sitio Prueba:
+
+<VirtualHost *:80>
+     ServerName prueba.localhost
+     DocumentRoot "/var/www/html/prueba"
+     ServerAdmin root@localhost
+</VirtualHost>
+
+# Guardamos con Ctrl + O, Enter y salimos con Ctrl + X.
+
+# Reiniciamos Apache para aplicar los cambios:
+
+sudo systemctl restart httpd
+
+# (Opcional) Agregamos el nombre del servidor al archivo hosts para simular acceso por nombre:
+
+sudo nano /etc/hosts
+
+# Añadimos al final la línea:
+
+127.0.0.1    prueba.localhost
+
+# Guardamos y salimos.
+# Abrimos el navegador y accedemos a http://hola.localhost — verificamos que se muestre “Hola Mundo”.
+
+# Ahora volvemos a /var/www/html para crear el segundo sitio:
+
+cd /var/www/html
+sudo mkdir estudiante
+cd estudiante
+
+# Creamos el HTML con los datos personales:
+
+sudo nano index.html
+
+# Pegamos el siguiente contenido:
 
 <!DOCTYPE html>
 <html>
-<head> <title>Hola Mundo</title></head>
+<head><title>Estudiante</title></head>
 <body>
-    <h1>Hola Mundo</h1>
+<h2>Neury Jorge Montero Mejia</h2>
+<p>Matrícula: 2025-0829</p>
+<p>Materia: Sistemas Operativos 3<br>
+Docente: Adrian Alcántara</p>
 </body>
 </html>
-nano /etc/httpd/conf/httpd.conf
-nano /etc/hosts
-systemctl restart httpd
-cd /var/www/html
-mkdir prueba2
-cd ./prueba2
-nano index.html
-<!DOCTYPE html>
-<html>
-<head><title>Datos de estudiante</title></head>
-<body>
-<h3>Marcos Antonio Martinez Ramirez</h3>
-<p>Matricula: 2025-0855</p>
-<p>Asignatura: Sistemas Operativos III<br>
-Maestro: Adrian Alcantara</p>
-</body>
-</html>
-nano /etc/httpd/conf/httpd.conf
-nano /etc/hosts
-systemctl restart httpd
+
+# Guardamos y salimos.
+
+# Volvemos a editar el archivo de configuración de Apache:
+
+sudo nano /etc/httpd/conf/httpd.conf
+
+# Añadimos la línea para que Apache escuche también en el puerto 8080:
+
+Listen 8080
+
+# Al final del archivo agregamos el nuevo VirtualHost:
+
+<VirtualHost *:8080>
+     ServerName estudiante.localhost
+     DocumentRoot "/var/www/html/estudiante"
+     ServerAdmin root@localhost
+</VirtualHost>
+
+# Guardamos y salimos.
+
+# Reiniciamos nuevamente Apache:
+
+sudo systemctl restart httpd
+
+# (Opcional) Agregamos el segundo nombre al archivo hosts:
+
+sudo nano /etc/hosts
+
+# Añadimos la línea:
+
+127.0.0.1    estudiante.localhost
+
+# Guardamos y salimos.
+
+# Abrimos el navegador y accedemos a http://estudiante.localhost:8080 — verificamos que se muestre nuestro nombre, matrícula y materia correctamente.
 
 
-practica 2
+Practica 2
 
-dnf install postfix* -y
-dnf install mail* -y
-cd /etc/postfix
-vi main.cf
+# Instalar el servidor de correo Postfix
 
-(agregar)myhostname = marcos.ro.com
-(agregar)mydomain = marcos.rod.com
-(descomentar linea 2)myorigin = $mydomain
-(descomentar linea 1)mynetworks = 192.168.254.132/24
-(agregar)relayhost = [smtp.gmail.com]:587
+sudo dnf install postfix* -y
+sudo dnf install mail* -y
 
-(comentar)#smtp_tls_security_level = may
-#########################
+# Ir al directorio de Postfix
+
+cd /etc/postfix/
+
+#Dirigirse a todas las configuraciones de Postfix
+
+sudo vim /etc/postfix/main.cf
+
+#Agregamos hostname
+
+myhostname = marcos.ro.com
+
+#Agregamos un dominio
+
+mydomain = marcos.rod.com
+
+#Descomentamos la segunda línea de myorigin
+
+myorigin = $mydomain
+
+#Agregamos nuestra dirección IP descomentando la primera línea de mynetworks
+
+mynetworks = 192.168.10.15/24, 127.0.0.0/8
+
+#Agregamos un relayhost
+
+relayhost = [smtp.gmail.com]:587
+
+#Vamos al final y ponemos la configuración
+
+######################
 smtp_use_tls = yes
 smtp_sasl_auth_enable = yes
 smtp_tls_security_level = encrypt
 
-smtp_sasl_security_options = 
+smtp_sasl_security_options =
 
 smtp_sasl_password_maps = hash:/etc/postfix/sasl_passwd
 
-<VirtualHost *:8080>
- ServerName prueba2.localhost
- DocumentRoot "/var/www/html/prueba2"
- ServerAdmin root@localhost
-</VirtualHost>
-vi sasl_passwd
-[smtp.gmail.com]:587 marcosmartinex36@gmail.com:
-postmap sasl_passwd
-chmod 600 sasl_passwd
-systemctl start postfix
-systemctl restart postfix
-vi correo.txt
-mail -s "una prueba" marcomartinex04@gmail.com < correo.txt
-mail -s "MambruSeFueALaGuerra" os3conadrian@gmail.com < correo.txt
+#Comentamos la línea de smpt may
+
+#smtp_tls_security_level = may
+
+#Agregamos la credenciales de autenticación
+
+sudo vi /etc/postfix/sasl_passwd
+
+#Dentro de la misma ponemos las credenciales
+
+[smtp.gmail.com]:587 marcosmartinex36@gmail.com:ifem pkgi jpwc uhxz
+
+#Agregarle permisos
+
+sudo postmap sasl_passwd
+
+#Poner escritura y lectura solo para root
+
+sudo chmod 600 sasl_passwd
+
+#Inicializamos y Reiniciamos el sistema de Postfix
+
+sudo systemctl start postfix
+
+sudo systemctl restart postfix
+
+#Verificamos el estatus
+
+sudo systemctl status postfix
+
+#Creamos el contenido del correo que vamos a enviar
+
+sudo vi /etc/postfix/mensaje.txt
+
+#Contenido
+
+Estudiante: Marcos Antonio Martinez Ramirez
+Matricula: 2025-0855
+Docente: Adrian Alcantara
+
+Laboratorio 4, Sistemas Operativos 3.
+
+#Enviamos un correo de prueba
+
+mail -s "Prueba" marcosmartinex04@gmail.com < mensaje.txt
+
+#Lo enviamos al maestro
+
+mail -s "MambruSeFueALaGuerra" os3conadrian@gmail.com < mensaje.txt
 
 
+PRACTICA 3
 
-Practica 3
+# Instalamos el servidor de impresión CUPS en Rocky Linux:
 
 sudo dnf install cups -y
+
+#Si no se instala entonces habilitamos el EPEL
+
+sudo dnf install \
+    https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm -y
+
+#Luego actualizamos los metadatos
+
+sudo dnf update -y
+
+#Y ahora si podremos instalar cups-pdf
+
 sudo dnf install cups-pdf -y
-firewall-cmd --permanent --add-port=631/tcp
+
+# Habilitamos e iniciamos el servicio:
+
+sudo systemctl enable --now cups
+
+# Verificamos que el servicio esté activo:
+
+sudo systemctl status cups
+
+# Instalamos la impresora virtual PDF:
+
+sudo dnf install cups-pdf -y
+
+# Abrimos el puerto 631 TCP en el firewall (interfaz web de CUPS):
+
+sudo firewall-cmd --add-port=631/tcp --permanent
 sudo firewall-cmd --reload
-nano /etc/cups/cupsd.conf
+
+# Editamos el archivo de configuración de CUPS:
+
+sudo nano /etc/cups/cupsd.conf
+
+# Dentro del archivo, en 'Listen localhost:631' agregamos 'Port 631' para que escuche en todas las interfaces.
+
+# Luego agregamos 'Allow from 192.168.10.15' (IP del cliente Windows) en las siguientes secciones: <Location />, <Location /admin>, <Location /admin/conf>, <Location /printers>.
+
+# Guardamos con Ctrl+O y salimos con Ctrl+X.
+
+# Reiniciamos el servicio de CUPS para aplicar los cambios:
+
+sudo systemctl restart cups
+
+# Permitimos administración remota, compartir impresoras y aceptar clientes externos:
+
 cupsctl --remote-admin --remote-any --share-printers
-systemctl start cups 
-systemctl enable cups
-systemctl restart
+
+# Desde el navegador en la PC con Windows (192.168.0.15), accedemos a: http://192.168.10.15:631
+
+# Vamos a Administration > Add Printer, seleccionamos la impresora PDF, le asignamos un nombre, marcamos "Share this printer", elegimos la marca Generic y el modelo "Generic CUPS-PDF Printer", luego hacemos clic en "Add Printer".
+
+# Copiamos la URL generada (por ejemplo, http://192.168.10.15:631/printers/Marcos).
+
+# En Windows vamos a Settings > Devices > Printers & scanners > Add printer > The printer I want isn’t listed > Select a shared printer by name, y pegamos la URL (quitando la "s" de https si la tiene).
+
+# Finalizamos la instalación y procedemos a imprimir un documento: Abrimos Word, escribimos un texto, presionamos Ctrl+P, elegimos la impresora creada, y hacemos clic en Print.
+
+# Verificamos en la interfaz web de CUPS accediendo a http://192.168.10.15:631/printers/tuimpresora y visualizando los trabajos completados. También se puede visualizar en el servidor que el PDF fue generado correctamente en la ruta: /var/spool/cups-pdf/DOCUMENTO/
 
 
 
